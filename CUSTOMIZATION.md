@@ -112,7 +112,7 @@ must contain a matching customer entry for the customer selected in `nwipe.conf`
 ### CSV Format
 
 "Customer Name";"Contact Name";"Customer Address";"Contact Phone"
-"GMR Marketing";"";"5CD123456";""
+"";"";"";""
 
 
 ### Important Rules
