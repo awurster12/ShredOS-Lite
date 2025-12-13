@@ -57,7 +57,7 @@ xz-utils file bc
 
 ### Step 1: Configure Buildroot
 
-make pc_x86_64_nwipe_defconfig
+make pc_x86_64_efi_defconfig
 
 
 ### Step 2: Build
@@ -135,7 +135,7 @@ They must be copied into the root filesystem overlay before rebuilding.
 
 ---
 
-### Enabling PDF Customization
+### Enabling PDF Customization (Please see CUSTOMIZATION.md for more in-depth instructions)
 
 #### Step 1: Copy example configuration files
 
