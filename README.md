@@ -135,7 +135,7 @@ They must be copied into the root filesystem overlay before rebuilding.
 
 ---
 
-### Enabling PDF Customization (Please see CUSTOMIZATION.md for more in-depth instructions)
+### Enabling PDF Customization (Please see [CUSTOMIZATION.md](CUSTOMIZATION.md) for more in-depth instructions)
 
 #### Step 1: Copy example configuration files
 
