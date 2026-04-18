@@ -1,215 +1,89 @@
-# Buildroot NWipe Appliance (x86_64 UEFI)
+# ShredOS-Lite
 
-## Overview
+ShredOS-Lite is a compact Buildroot-based ShredOS image focused on booting directly into `nwipe` for disk erasure workflows.
 
-This project provides a minimal Linux appliance built with Buildroot for secure disk erasure using **nwipe**.
+## Use version 1.0.3 or newer
 
-The system boots entirely into RAM (initramfs) and never mounts internal disks, making it suitable for IT asset disposal, decommissioning, and audit/compliance workflows.
+For the best experience, use **1.0.3 or newer**.
 
-## Key Features
+Version **1.0.3** modernizes the project layout around:
 
-- nwipe (v0.39+)
-- RAM-based boot (initramfs)
-- SATA and NVMe support (including Intel VMD / RST)
-- PDF erasure certificates
-- Optional persistent FAT32 partition for reports
-- Appliance-style root shell (no login prompt)
-- Fully reproducible Buildroot build
+- **Buildroot 2026.02**
+- **`nwipe` v0.40**
+- a cleaner **`br2-external`** project structure
+- updated build instructions for **Debian/Ubuntu** and **Arch Linux**
 
-## What This Image Does
+If you are using an older source package or release such as **1.0.2 or older**, see [README_LEGACY.md](README_LEGACY.md).
 
-- Boots on x86_64 UEFI systems
-- Detects SATA and NVMe storage devices
-- Allows secure disk wiping using nwipe
-- Generates PDF wipe reports
-- Optionally stores reports on the boot USB
+If you want the newest build, either:
 
-**WARNING:** This image permanently destroys data. Always verify target disks before wiping.
+- download the **latest source** from this repository, or
+- download the **latest release** from the GitHub Releases page.
 
-## Repository Structure
+## Repository layout
 
-├── board/pc/
-│ ├── genimage-efi.cfg
-│ ├── grub-efi.cfg
-│ ├── linux-nwipe.config
-│ └── overlay/
-│ └── etc/
-├── configs/
-│ └── pc_x86_64_nwipe_defconfig
-├── package/
-│ └── nwipe/
-└── README.md
+This repository is intended to contain the project-specific files only:
 
+- `shredos-lite-external/` - ShredOS-Lite Buildroot external tree
+- `README.md` - main project overview
+- `BUILDING.md` - current build instructions
+- `README_LEGACY.md` - instructions for 1.0.2 and older
+- `RELEASING.md` - release preparation and GitHub upload instructions
 
-## Host System Requirements
+The full Buildroot source tree is **not** intended to live permanently in this repository.
 
-A Linux system with standard Buildroot dependencies installed.
+## Building
 
-### Debian / Ubuntu
+See [BUILDING.md](BUILDING.md) for current instructions.
 
-sudo apt install
-build-essential git libncurses5-dev libncursesw5-dev
-wget curl python3 bison flex unzip rsync
-xz-utils file bc
+That document covers:
 
+- Debian/Ubuntu prerequisites
+- Arch Linux prerequisites
+- current Buildroot workflow using `BR2_EXTERNAL`
+- `nwipe` update notes
+- troubleshooting and cleanup
 
-## Building the Image
+## Legacy builds
 
-### Step 1: Configure Buildroot
+If you are rebuilding **1.0.2 or older**, see [README_LEGACY.md](README_LEGACY.md).
 
-make pc_x86_64_efi_defconfig
+Those older releases were distributed as a full Buildroot source tree and may require additional workarounds on newer host systems.
 
+## Current recommended workflow
 
-### Step 2: Build
+1. Download or clone the latest source from this repository.
+2. Download the matching Buildroot release.
+3. Build using `shredos-lite-external/` with `BR2_EXTERNAL`.
+4. Produce `disk.img` from `output/images/`.
+5. Publish `disk.img` and a source archive as release assets.
 
-make
+## What to publish on GitHub
 
+### In the repository
 
-Buildroot will automatically download all required sources and generate a bootable image.
+Keep source and documentation only:
 
-## Build Output
+- `shredos-lite-external/`
+- `README.md`
+- `BUILDING.md`
+- `README_LEGACY.md`
+- `RELEASING.md`
 
-After a successful build, the image will be located at:
+### In GitHub Releases
 
-output/images/disk.img
+Upload build artifacts such as:
 
+- `disk.img`
+- combined source archive for the release, for example `ShredOS-Lite-v1.0.3.tar.gz`
 
-## Writing the Image to USB
+## Why this layout is better
 
-**WARNING:** This will erase the target USB device.
+Older ShredOS-Lite releases placed the main source snapshot in the release assets. That works, but it makes the project harder to maintain.
 
-sudo dd if=output/images/disk.img of=/dev/sdX bs=4M status=progress conv=fsync
+This newer layout separates:
 
+- **maintained source** in the repository
+- **packaged source snapshots and images** in GitHub Releases
 
-Replace `/dev/sdX` with the correct USB device.
-
-## Booting the Appliance
-
-1. Insert the USB into the target system
-2. Boot via UEFI
-3. Disable Secure Boot if enabled
-4. The system boots directly into a root shell (default login: root, password: none)
-
-To start nwipe:
-
-nwipe
-
-
-## Using NWipe
-
-From the ncurses interface you can:
-
-- Select disks
-- Choose wipe methods
-- Enable verification
-- Generate PDF erasure certificates
-
-## Optional: Persistent Reports Partition
-
-The image can include a FAT32 partition labeled `REPORTS`.
-
-If enabled, it is automatically mounted at:
-
-/mnt/reports
-
-
-### Saving Reports
-
-cp /var/log/nwipe/*.pdf /mnt/reports/
-sync
-
-
-## Optional: NWipe PDF Customization Script
-
-This project supports an optional customization mechanism that can automatically populate fields in the nwipe PDF erasure report.
-
-Customizable fields include:
-
-- Organization name
-- Customer name
-- Operator name
-- System serial number (via `dmidecode`)
-
-The repository ships **example configuration files only**.  
-They must be copied into the root filesystem overlay before rebuilding.
-
----
-
-### Enabling PDF Customization (Please see [CUSTOMIZATION.md](CUSTOMIZATION.md) for more in-depth instructions)
-
-#### Step 1: Copy example configuration files
-
-From the root of the repository:
-
-mkdir -p board/pc/overlay/etc/nwipe
-cp examples/nwipe/nwipe.conf.example board/pc/overlay/etc/nwipe/nwipe.conf
-cp examples/nwipe/nwipe_customers.csv.example board/pc/overlay/etc/nwipe/nwipe_customers.csv
-
-
-Edit the copied files as needed:
-
-board/pc/overlay/etc/nwipe/nwipe.conf
-
----
-
-#### Step 2: Enable the customization init script
-
-Ensure the following init script exists and is executable:
-
-board/pc/overlay/etc/init.d/S20nwipe-serial
-
-
-This script runs at boot and:
-
-- Reads the system serial number
-- Updates `nwipe.conf`
-- Updates `nwipe_customers.csv`
-
----
-
-#### Step 3: Rebuild the image
-
-After copying and editing the configuration files, rebuild the image:
-
-make
-
-
-The generated image will now include the customized nwipe PDF fields.
-
----
-
-### Disabling PDF Customization
-
-To disable customization and use default nwipe behavior:
-
-rm board/pc/overlay/etc/init.d/S20nwipe-serial
-
-Rebuild and nwipe will use default behavior.
-
-## BIOS / Firmware Notes
-
-- UEFI boot required
-- Secure Boot must be disabled
-- NVMe supported in AHCI and Intel VMD / RST modes
-
-## Reproducible Builds
-
-This repository is designed to be clone-and-build:
-
-git clone <repo-url>
-cd <repo>
-make pc_x86_64_nwipe_defconfig
-make
-
-
-All sources are downloaded automatically by Buildroot.
-
-## License
-
-- Buildroot: GPLv2
-- Linux kernel: GPLv2
-- nwipe: GPLv2
-
-## Disclaimer
-
-This software permanently destroys data. Use with care.
+That makes future Buildroot updates, `nwipe` updates, and release automation much easier.
