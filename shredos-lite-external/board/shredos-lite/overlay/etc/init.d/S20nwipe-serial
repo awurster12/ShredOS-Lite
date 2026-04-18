@@ -1,0 +1,55 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          nwipe-serial
+# Required-Start:
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:
+# Short-Description: Generate nwipe.conf and nwipe_customers.csv with PC serial
+### END INIT INFO
+
+CONF="/etc/nwipe/nwipe.conf"
+CSV="/etc/nwipe/nwipe_customers.csv"
+
+# Get system serial number from the BIOS/UEFI
+SYS_SN="$(dmidecode -s system-serial-number 2>/dev/null | tr -d '\n')"
+[ -z "$SYS_SN" ] && SYS_SN="UNKNOWN"
+
+mkdir -p /etc/nwipe
+
+# Rewrite nwipe.conf
+cat > "$CONF" <<EOF
+Organisation_Details : 
+{
+  Business_Name = "";
+  Business_Address = "";
+  Contact_Name = "";
+  Contact_Phone = "";
+  Op_Tech_Name = "";
+};
+PDF_Certificate : 
+{
+  PDF_Enable = "ENABLED";
+  PDF_Preview = "DISABLED";
+};
+Selected_Customer : 
+{
+  Customer_Name = "";
+  Customer_Address = "";
+  #This line puts the system serial number as the Selected Customer Name
+  Contact_Name = "$SYS_SN";
+  Contact_Phone = "";
+};
+EOF
+
+# Rewrite nwipe_customers.csv
+#The Info above has to match nwipe_customers.csv for it to create the PDF properly
+cat > "$CSV" <<EOF
+"Customer Name";"Contact Name";"Customer Address";"Contact Phone"
+"";"";"$SYS_SN";""
+EOF
+
+chmod 644 "$CONF" "$CSV"
+
+exit 0

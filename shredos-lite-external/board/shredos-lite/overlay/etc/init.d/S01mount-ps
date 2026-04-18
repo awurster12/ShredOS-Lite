@@ -1,0 +1,12 @@
+#!/bin/sh
+
+mkdir -p /proc/sys /dev
+
+#Mount proc/sys early if missing
+mountpoint -q /proc || mount -t proc proc /proc
+mountpoint -q /sys || mount -t sysfs sysfs /sys
+
+#Make sure /dev exists (usually handled by the kernel)
+mountpoint -q /dev || mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+
+exit 0

@@ -1,0 +1,1 @@
+source "$BR2_EXTERNAL_SHREDOS_LITE_PATH/package/nwipe/Config.in"

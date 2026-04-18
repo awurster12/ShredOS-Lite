@@ -1,0 +1,8 @@
+config BR2_PACKAGE_NWIPE
+	bool "nwipe"
+	depends on BR2_USE_MMU
+	select BR2_PACKAGE_NCURSES
+	select BR2_PACKAGE_PARTED
+	select BR2_PACKAGE_LIBCONFIG
+	help
+	 nwipe secure disk eraser (v0.39)

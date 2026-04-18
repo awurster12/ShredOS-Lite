@@ -1,0 +1,9 @@
+output/
+dl/
+.config
+*.img
+*.tar.gz
+*.zip
+*.log
+build.log
+*.swp
