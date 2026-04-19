@@ -1,89 +1,65 @@
 # ShredOS-Lite
 
-ShredOS-Lite is a compact Buildroot-based ShredOS image focused on booting directly into `nwipe` for disk erasure workflows.
+ShredOS-Lite is a lightweight, Buildroot-based ShredOS image designed to boot straight into **nwipe** for disk erasure.
 
-## Use version 1.0.3 or newer
+This repository contains the source and project files used to build modern ShredOS-Lite releases.
 
-For the best experience, use **1.0.3 or newer**.
+## Start here
 
-Version **1.0.3** modernizes the project layout around:
+If you are here to **use ShredOS-Lite**, the easiest option is to download the latest ready-to-use release from the **Releases** page.
 
-- **Buildroot 2026.02**
-- **`nwipe` v0.40**
-- a cleaner **`br2-external`** project structure
-- updated build instructions for **Debian/Ubuntu** and **Arch Linux**
+If you are here to **build ShredOS-Lite from source**, start with [BUILDING.md](BUILDING.md).
 
-If you are using an older source package or release such as **1.0.2 or older**, see [README_LEGACY.md](README_LEGACY.md).
+## Recommended version
 
-If you want the newest build, either:
+For the best experience, use **v1.0.3 or newer**.
 
-- download the **latest source** from this repository, or
-- download the **latest release** from the GitHub Releases page.
+Version 1.0.3 updates the project to a newer Buildroot base, a newer nwipe version, and a cleaner source layout that is easier to build and maintain.
 
-## Repository layout
+If you are working with **v1.0.2 or older**, see [README_LEGACY.md](../../blob/archive/README_LEGACY.md).
 
-This repository is intended to contain the project-specific files only:
+## What you will find in this repository
 
-- `shredos-lite-external/` - ShredOS-Lite Buildroot external tree
-- `README.md` - main project overview
-- `BUILDING.md` - current build instructions
-- `README_LEGACY.md` - instructions for 1.0.2 and older
-- `RELEASING.md` - release preparation and GitHub upload instructions
+This repository contains the ShredOS-Lite project files and documentation needed to build current versions of ShredOS-Lite.
 
-The full Buildroot source tree is **not** intended to live permanently in this repository.
+Important files:
 
-## Building
+- `shredos-lite-external/` — project-specific Buildroot files
+- [BUILDING.md](BUILDING.md) — current build instructions for Debian/Ubuntu and Arch Linux
+- [RELEASING.md](RELEASING.md) — release preparation notes
 
-See [BUILDING.md](BUILDING.md) for current instructions.
+## What should I do next?
 
-That document covers:
+### I just want to use ShredOS-Lite
+Go to the **Releases** page and download the latest release image.
+
+### I want to build the latest version from source
+Read [BUILDING.md](BUILDING.md).
+
+### I need to rebuild an older release
+Read [README_LEGACY.md](../../blob/archive/README_LEGACY.md).
+
+## Building the current version
+
+Current build instructions are in [BUILDING.md](BUILDING.md).
+
+That guide includes:
 
 - Debian/Ubuntu prerequisites
 - Arch Linux prerequisites
-- current Buildroot workflow using `BR2_EXTERNAL`
-- `nwipe` update notes
-- troubleshooting and cleanup
+- the current Buildroot workflow
+- notes about nwipe updates
+- troubleshooting and cleanup steps
 
-## Legacy builds
+## Older releases
 
-If you are rebuilding **1.0.2 or older**, see [README_LEGACY.md](README_LEGACY.md).
+Older ShredOS-Lite releases such as **v1.0.2 and earlier** used an older layout and may need extra workarounds on newer systems.
 
-Those older releases were distributed as a full Buildroot source tree and may require additional workarounds on newer host systems.
+If you need to work with one of those older source packages, use [README_LEGACY.md](../../blob/archive/README_LEGACY.md).
 
-## Current recommended workflow
+## Purpose of this repository
 
-1. Download or clone the latest source from this repository.
-2. Download the matching Buildroot release.
-3. Build using `shredos-lite-external/` with `BR2_EXTERNAL`.
-4. Produce `disk.img` from `output/images/`.
-5. Publish `disk.img` and a source archive as release assets.
+The purpose of this repository is to provide a clear, maintained source home for ShredOS-Lite along with build documentation for current users and contributors.
 
-## What to publish on GitHub
-
-### In the repository
-
-Keep source and documentation only:
-
-- `shredos-lite-external/`
-- `README.md`
-- `BUILDING.md`
-- `README_LEGACY.md`
-- `RELEASING.md`
-
-### In GitHub Releases
-
-Upload build artifacts such as:
-
-- `disk.img`
-- combined source archive for the release, for example `ShredOS-Lite-v1.0.3.tar.gz`
-
-## Why this layout is better
-
-Older ShredOS-Lite releases placed the main source snapshot in the release assets. That works, but it makes the project harder to maintain.
-
-This newer layout separates:
-
-- **maintained source** in the repository
-- **packaged source snapshots and images** in GitHub Releases
-
-That makes future Buildroot updates, `nwipe` updates, and release automation much easier.
+If you are looking for the latest source, use this repository.  
+If you are looking for ready-to-use build artifacts, use the **Releases** page.

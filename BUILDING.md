@@ -1,286 +1,258 @@
-# Building ShredOS-Lite (current workflow)
+# Building ShredOS-Lite
 
-This document covers the **current** ShredOS-Lite build process.
+This document covers building **ShredOS-Lite** with the current Buildroot-based workflow on both **Debian/Ubuntu** and **Arch Linux**.
 
-It assumes the project is maintained as a Buildroot external tree named:
+The current recommended base is **Buildroot 2026.02**. Buildroot lists `2026.02.x` as the current stable series, while `2025.11.x` is old stable and EOL. The latest upstream `nwipe` release is `v0.40`. citeturn0search0turn0search4
 
-- `shredos-lite-external/`
+## Overview
 
-and built against a separate Buildroot source tree.
+ShredOS-Lite is built using:
 
-## Current baseline
+- a clean upstream Buildroot checkout
+- a `br2-external` tree containing the ShredOS-Lite board files, configs, and custom package definitions
 
-Current ShredOS-Lite releases are intended to build with:
+This keeps the project-specific files separate from upstream Buildroot and makes future upgrades much easier.
 
-- **Buildroot 2026.02**
-- **`nwipe` v0.40**
+## Directory Layout
 
-## Directory layout
-
-Recommended layout:
+A typical working layout looks like this:
 
 ```text
 ~/src/
-  buildroot-2026.02/
-  shredos-lite-external/
+├── buildroot-2026.02/
+└── shredos-lite-external/
 ```
 
-## Debian / Ubuntu prerequisites
+The external tree should contain at least:
 
-Install the required packages:
+```text
+shredos-lite-external/
+├── Config.in
+├── external.desc
+├── external.mk
+├── board/
+│   └── shredos-lite/
+├── configs/
+│   ├── pc_x86_64_bios_defconfig
+│   └── pc_x86_64_efi_defconfig
+└── package/
+    └── nwipe/
+```
+
+## 1. Get Buildroot
+
+Download the current stable Buildroot release:
+
+```bash
+cd ~/src
+git clone --branch 2026.02 --depth 1 https://gitlab.com/buildroot.org/buildroot.git buildroot-2026.02
+```
+
+## 2. Debian / Ubuntu Build Dependencies
+
+Install the required host packages:
 
 ```bash
 sudo apt update
 sudo apt install -y \
   build-essential git libncurses-dev wget curl python3 \
-  bison flex unzip rsync xz-utils file bc cpio perl patch tar \
-  gawk sed texinfo help2man
+  bison flex unzip rsync xz-utils file bc cpio perl patch tar
 ```
 
-## Arch Linux prerequisites
+## 3. Arch Linux Build Dependencies
 
-Install the required packages:
+Install the required host packages:
 
 ```bash
 sudo pacman -S --needed \
   base-devel git ncurses wget curl python bison flex unzip \
-  rsync xz file bc cpio perl patch tar gawk sed texinfo help2man
+  rsync xz file bc cpio perl patch tar
 ```
 
-### Arch note
+## 4. Build Commands
 
-If you hit a host toolchain issue on Arch, install GCC 14 from AUR and retry with compiler overrides:
-
-```bash
-yay -S gcc14
-```
-
-Then build with:
-
-```bash
-CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 make ...
-```
-
-## Download Buildroot
-
-```bash
-mkdir -p ~/src
-cd ~/src
-wget https://buildroot.org/downloads/buildroot-2026.02.tar.xz
-tar -xf buildroot-2026.02.tar.xz
-```
-
-## Expected external tree files
-
-Your repository should provide:
-
-```text
-shredos-lite-external/
-  external.desc
-  external.mk
-  Config.in
-  configs/
-    pc_x86_64_bios_defconfig
-    pc_x86_64_efi_defconfig
-  board/
-    shredos-lite/
-  package/
-    nwipe/
-```
-
-## Check the `nwipe` version
-
-Verify the package recipe is pinned to the expected version:
-
-```bash
-grep -nE 'NWIPE_VERSION|NWIPE_SITE|NWIPE_SOURCE' ~/src/shredos-lite-external/package/nwipe/nwipe.mk
-```
-
-Expected value:
-
-```make
-NWIPE_VERSION = v0.40
-```
-
-## Update the `nwipe` hash
-
-If you change the `nwipe` version, update the matching source hash.
-
-Download the expected source tarball:
-
-```bash
-cd ~/src
-wget -O nwipe-v0.40.tar.gz https://github.com/martijnvanbrummelen/nwipe/archive/refs/tags/v0.40.tar.gz
-sha256sum nwipe-v0.40.tar.gz
-```
-
-Then update:
-
-```text
-~/src/shredos-lite-external/package/nwipe/nwipe.hash
-```
-
-The source tarball line should match the exact filename:
-
-```text
-sha256  <your_hash_here>  nwipe-v0.40.tar.gz
-```
-
-## Build on Debian / Ubuntu
+Run all build commands from the Buildroot tree:
 
 ```bash
 cd ~/src/buildroot-2026.02
+```
+
+### UEFI build
+
+```bash
 make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
 make BR2_EXTERNAL=../shredos-lite-external olddefconfig
+make BR2_EXTERNAL=../shredos-lite-external
+```
+
+### BIOS build
+
+```bash
+make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_bios_defconfig
+make BR2_EXTERNAL=../shredos-lite-external olddefconfig
+make BR2_EXTERNAL=../shredos-lite-external
+```
+
+### Verbose single-job build
+
+If you need easier-to-read logs during migration or troubleshooting:
+
+```bash
 make BR2_EXTERNAL=../shredos-lite-external -j1 V=1
 ```
 
-## Build on Arch Linux
+## 5. Output Files
 
-```bash
-cd ~/src/buildroot-2026.02
-make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
-make BR2_EXTERNAL=../shredos-lite-external olddefconfig
-make BR2_EXTERNAL=../shredos-lite-external -j1 V=1
-```
-
-### Arch fallback using GCC 14
-
-```bash
-cd ~/src/buildroot-2026.02
-CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 \
-make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
-
-CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 \
-make BR2_EXTERNAL=../shredos-lite-external olddefconfig
-
-CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 \
-make BR2_EXTERNAL=../shredos-lite-external -j1 V=1
-```
-
-## Output files
-
-After a successful build, check:
-
-```bash
-cd ~/src/buildroot-2026.02
-ls output/images
-```
-
-Typical important artifacts:
-
-- `disk.img`
-- `bzImage`
-- `rootfs.ext4`
-- `rootfs.ext2`
-- `rootfs.cpio.gz`
-
-For normal release usage, the main bootable image is typically:
+Build artifacts are written to:
 
 ```text
-output/images/disk.img
+buildroot-2026.02/output/images/
 ```
 
-## Verifying the image
-
-### Inspect the image layout
+List them with:
 
 ```bash
-cd ~/src/buildroot-2026.02/output/images
-fdisk -l disk.img
+ls ~/src/buildroot-2026.02/output/images
 ```
 
-### Mount the EFI partition from `disk.img`
+## 6. Updating `nwipe`
+
+Moving to a newer Buildroot does **not** automatically update `nwipe` if ShredOS-Lite is using its own custom `package/nwipe/` recipe.
+
+Check the current version with:
 
 ```bash
-sudo losetup --find --partscan --show disk.img
-sudo mkdir -p /mnt/shredos
-sudo mount /dev/loop0p1 /mnt/shredos
-ls /mnt/shredos
-ls /mnt/shredos/EFI/BOOT
+grep -nE '^NWIPE_VERSION|^NWIPE_SITE|^NWIPE_SOURCE' ~/src/shredos-lite-external/package/nwipe/nwipe.mk
 ```
 
-### Mount the root filesystem directly
+If you want the latest upstream `nwipe`, update the package recipe and its hash file accordingly. The latest upstream release is currently `v0.40`. citeturn0search4turn0search1
 
-```bash
-sudo mkdir -p /mnt/shredos-root
-sudo mount -o loop rootfs.ext4 /mnt/shredos-root
-find /mnt/shredos-root -iname '*nwipe*'
-```
+## 7. Cleaning the Build Tree
 
-### Unmount when finished
-
-```bash
-sudo umount /mnt/shredos-root
-sudo umount /mnt/shredos
-sudo losetup -d /dev/loop0
-```
-
-## Writing the image to USB
-
-Identify the USB device first:
-
-```bash
-lsblk
-```
-
-Then write the image to the disk device, not a partition:
-
-```bash
-sudo dd if=~/src/buildroot-2026.02/output/images/disk.img of=/dev/sdX bs=4M status=progress conv=fsync
-sync
-```
-
-Replace `/dev/sdX` with the actual target device.
-
-## Cleaning generated files
-
-To remove generated build output before archiving sources:
+To remove generated files before committing source changes:
 
 ```bash
 cd ~/src/buildroot-2026.02
 make BR2_EXTERNAL=../shredos-lite-external clean
-rm -rf output dl .config
+rm -rf output
 ```
 
-## Troubleshooting
+Use `distclean` only if you intentionally want to reset the Buildroot configuration as well.
 
-### “Please configure Buildroot first”
+## 8. Arch Linux Notes
 
-Load a defconfig first:
+On the **legacy Buildroot 2025.11 tree**, native Arch builds could fail in `host-m4-1.4.20` when using Arch's default GCC 15 toolchain. That older release series is now EOL. Buildroot documents `2025.11.x` as old stable / EOL and `2026.02.x` as current stable. citeturn0search0
 
-```bash
-cd ~/src/buildroot-2026.02
-make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
-make BR2_EXTERNAL=../shredos-lite-external olddefconfig
-```
+For the **current Buildroot 2026.02 workflow**, start by building with Arch's normal compiler.
 
-### `cpio` missing
-
-Debian / Ubuntu:
-
-```bash
-sudo apt install -y cpio
-```
-
-Arch:
-
-```bash
-sudo pacman -S --needed cpio
-```
-
-### `gcc-14: command not found` on Arch
-
-Install `gcc14` from AUR:
+If you hit a host-compiler regression on Arch and need a fallback, install `gcc14` from AUR and build with explicit compiler overrides:
 
 ```bash
 yay -S gcc14
 ```
 
-### `host-m4` errors on Arch
-
-Retry the build using GCC 14:
+Then:
 
 ```bash
-CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 make BR2_EXTERNAL=../shredos-lite-external -j1 V=1
+cd ~/src/buildroot-2026.02
+CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 \
+  make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
+
+CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 \
+  make BR2_EXTERNAL=../shredos-lite-external olddefconfig
+
+CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 \
+  make BR2_EXTERNAL=../shredos-lite-external
+```
+
+Arch's current `gcc` package is GCC 15.2.1, which is why the GCC 14 fallback can still be useful for older Buildroot trees. citeturn0search0turn0search9
+
+## 9. Common Problems
+
+### `cpio` missing
+
+If Buildroot stops with a message saying `You must install 'cpio' on your build machine`, install the missing host package:
+
+- Debian / Ubuntu: `sudo apt install cpio`
+- Arch Linux: `sudo pacman -S cpio`
+
+### Custom defconfig not found
+
+Make sure the command is being run inside the Buildroot tree:
+
+```bash
+cd ~/src/buildroot-2026.02
+make BR2_EXTERNAL=../shredos-lite-external list-defconfigs
+```
+
+If your external defconfigs do not appear, verify that `shredos-lite-external/` contains:
+
+- `external.desc`
+- `external.mk`
+- `Config.in`
+- `configs/pc_x86_64_efi_defconfig` and/or `configs/pc_x86_64_bios_defconfig`
+
+### Old in-tree paths after migration
+
+If you migrated from an older in-tree layout, make sure your defconfigs and board scripts no longer reference `board/pc/...` directly for project files.
+
+For external-tree files, use:
+
+```make
+$(BR2_EXTERNAL_SHREDOS_LITE_PATH)/board/shredos-lite/...
+```
+
+while Buildroot-owned helpers such as `support/scripts/genimage.sh` should remain unchanged.
+
+## 10. Recommended Git Workflow
+
+Commit only the project-specific external tree files, not generated build output.
+
+Typical source changes to commit:
+
+- `shredos-lite-external/Config.in`
+- `shredos-lite-external/external.desc`
+- `shredos-lite-external/external.mk`
+- `shredos-lite-external/configs/*`
+- `shredos-lite-external/board/shredos-lite/*`
+- `shredos-lite-external/package/nwipe/*`
+
+Do **not** commit:
+
+- `buildroot-2026.02/output/`
+- generated images
+- downloaded tarballs
+- temporary build artifacts
+
+## 11. Quick Start Summary
+
+### Debian / Ubuntu
+
+```bash
+sudo apt update
+sudo apt install -y build-essential git libncurses-dev wget curl python3 bison flex unzip rsync xz-utils file bc cpio perl patch tar
+cd ~/src/buildroot-2026.02
+make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
+make BR2_EXTERNAL=../shredos-lite-external olddefconfig
+make BR2_EXTERNAL=../shredos-lite-external
+```
+
+### Arch Linux
+
+```bash
+sudo pacman -S --needed base-devel git ncurses wget curl python bison flex unzip rsync xz file bc cpio perl patch tar
+cd ~/src/buildroot-2026.02
+make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
+make BR2_EXTERNAL=../shredos-lite-external olddefconfig
+make BR2_EXTERNAL=../shredos-lite-external
+```
+
+### Arch Linux fallback with GCC 14
+
+```bash
+yay -S gcc14
+cd ~/src/buildroot-2026.02
+CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 make BR2_EXTERNAL=../shredos-lite-external pc_x86_64_efi_defconfig
+CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 make BR2_EXTERNAL=../shredos-lite-external olddefconfig
+CC=gcc-14 HOSTCC=gcc-14 CXX=g++-14 HOSTCXX=g++-14 make BR2_EXTERNAL=../shredos-lite-external
 ```
