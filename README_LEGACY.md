@@ -16,7 +16,7 @@ Modern releases use:
 - newer `nwipe`
 - clearer Debian/Ubuntu and Arch instructions
 
-For current development and current builds, see [BUILDING.md](BUILDING.md).
+For newer versions, see the [main README](https://github.com/awurster12/ShredOS-Lite/blob/main/README.md)..
 
 ## Legacy source layout
 
