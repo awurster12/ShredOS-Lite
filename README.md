@@ -16,7 +16,7 @@ For the best experience, use **v1.0.3 or newer**.
 
 Version 1.0.3 updates the project to a newer Buildroot base, a newer nwipe version, and a cleaner source layout that is easier to build and maintain.
 
-If you are working with **v1.0.2 or older**, see [README_LEGACY.md](README_LEGACY.md).
+If you are working with **v1.0.2 or older**, see [README_LEGACY.md](../../blob/archive/README_LEGACY.md).
 
 ## What you will find in this repository
 
@@ -26,7 +26,6 @@ Important files:
 
 - `shredos-lite-external/` — project-specific Buildroot files
 - [BUILDING.md](BUILDING.md) — current build instructions for Debian/Ubuntu and Arch Linux
-- [README_LEGACY.md](README_LEGACY.md) — instructions for older builds such as v1.0.2 and earlier
 - [RELEASING.md](RELEASING.md) — release preparation notes
 
 ## What should I do next?
@@ -38,7 +37,7 @@ Go to the **Releases** page and download the latest release image.
 Read [BUILDING.md](BUILDING.md).
 
 ### I need to rebuild an older release
-Read [README_LEGACY.md](README_LEGACY.md).
+Read [README_LEGACY.md](../../blob/archive/README_LEGACY.md).
 
 ## Building the current version
 
@@ -56,7 +55,7 @@ That guide includes:
 
 Older ShredOS-Lite releases such as **v1.0.2 and earlier** used an older layout and may need extra workarounds on newer systems.
 
-If you need to work with one of those older source packages, use [README_LEGACY.md](README_LEGACY.md).
+If you need to work with one of those older source packages, use [README_LEGACY.md](../../blob/archive/README_LEGACY.md).
 
 ## Purpose of this repository
 
